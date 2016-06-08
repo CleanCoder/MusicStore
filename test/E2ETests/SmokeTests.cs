@@ -111,8 +111,11 @@ namespace E2ETests
             ApplicationType applicationType,
             string applicationBaseUrl)
         {
-            var smokeTestRunner = new SmokeTests(_logger);
-            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
+            using (new ConsoleEventListener())
+            {
+                var smokeTestRunner = new SmokeTests(_logger);
+                await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
+            }
         }
         public void Dispose()
         {
@@ -206,6 +209,34 @@ namespace E2ETests
 
                     await SmokeTestHelper.RunTestsAsync(deploymentResult, _logger);
                 }
+            }
+        }
+    }
+
+    public class ConsoleEventListener : EventListener
+    {
+        public ConsoleEventListener()
+        {
+            foreach (EventSource source in EventSource.GetSources())
+                EnableEvents(source, EventLevel.LogAlways);
+        }
+
+        protected override void OnEventSourceCreated(EventSource eventSource)
+        {
+            base.OnEventSourceCreated(eventSource);
+            EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All);
+        }
+
+        protected override void OnEventWritten(EventWrittenEventArgs eventData)
+        {
+            lock (Console.Out)
+            {
+                string text = $"[{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
+
+                ConsoleColor origForeground = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.DarkYellow;
+                Console.WriteLine(text);
+                Console.ForegroundColor = origForeground;
             }
         }
     }
