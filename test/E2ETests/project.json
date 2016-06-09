@@ -45,5 +45,12 @@
     }
   },
   "testRunner": "xunit",
-  "userSecretsId": "MusicStore.E2ETests"
+  "userSecretsId": "MusicStore.E2ETests",
+  "scripts": {
+    "precompile": [
+      "pwd",
+      "echo copy System.Net.Http.dll",
+      "cp ../../tools/System.Net.Http.dll /Users/travis/.nuget/packages/System.Net.Http/4.1.0-rc3-24206-00/runtimes/unix/lib/netstandard1.6", 
+      "echo $?" ]
+  }
 }

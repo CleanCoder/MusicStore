@@ -114,6 +114,8 @@ namespace E2ETests
         {
             using (new ConsoleEventListener("System-Net"))
             {
+                var handler = new HttpClientHandler();
+                Console.WriteLine("created new handler " + handler);
                 var smokeTestRunner = new SmokeTests(_logger);
                 await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
             }
