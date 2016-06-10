@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -112,13 +111,8 @@ namespace E2ETests
             ApplicationType applicationType,
             string applicationBaseUrl)
         {
-            using (new ConsoleEventListener("System-Net"))
-            {
-                var handler = new HttpClientHandler();
-                Console.WriteLine("created new handler " + handler);
-                var smokeTestRunner = new SmokeTests(_logger);
-                await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
-            }
+            var smokeTestRunner = new SmokeTests(_logger);
+            await smokeTestRunner.SmokeTestSuite(serverType, runtimeFlavor, architecture, applicationType, applicationBaseUrl);
         }
         public void Dispose()
         {
@@ -211,46 +205,6 @@ namespace E2ETests
                     Helpers.SetInMemoryStoreForIIS(deploymentParameters, _logger);
 
                     await SmokeTestHelper.RunTestsAsync(deploymentResult, _logger);
-                }
-            }
-        }
-    }
-
-    public class ConsoleEventListener : EventListener
-    {
-        private readonly string _eventFilter;
-
-        public ConsoleEventListener() : this(string.Empty) { }
-
-        public ConsoleEventListener(string filter)
-        {
-            if (filter == null)
-                throw new ArgumentNullException(nameof(filter));
-
-            _eventFilter = filter;
-
-            foreach (EventSource source in EventSource.GetSources())
-                EnableEvents(source, EventLevel.LogAlways);
-        }
-
-        protected override void OnEventSourceCreated(EventSource eventSource)
-        {
-            base.OnEventSourceCreated(eventSource);
-            EnableEvents(eventSource, EventLevel.LogAlways, EventKeywords.All);
-        }
-
-        protected override void OnEventWritten(EventWrittenEventArgs eventData)
-        {
-            lock (Console.Out)
-            {
-                string text = $"[{eventData.EventSource.Name}-{eventData.EventId}]{(eventData.Payload != null ? $" ({string.Join(", ", eventData.Payload)})." : "")}";
-                
-                if (_eventFilter != null && text.Contains(_eventFilter))
-                {
-                    ConsoleColor origForeground = Console.ForegroundColor;
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.WriteLine(text);
-                    Console.ForegroundColor = origForeground;
                 }
             }
         }

@@ -15,7 +15,7 @@ namespace E2ETests
             var httpClient = new HttpClient(httpClientHandler)
             {
                 BaseAddress = new Uri(deploymentResult.ApplicationBaseUri),
-                Timeout = TimeSpan.FromSeconds(60),
+                Timeout = TimeSpan.FromSeconds(5),
             };
 
             using (httpClient)
